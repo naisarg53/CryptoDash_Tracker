@@ -19,6 +19,8 @@ from django.contrib.auth.tokens import default_token_generator
 from django.utils.encoding import force_bytes
 from django.template import Context
 import requests
+from django.core.paginator import Paginator
+
 
 from coinmarketcapapi import CoinMarketCapAPI, CoinMarketCapAPIError
 
@@ -28,9 +30,11 @@ cmc = CoinMarketCapAPI('e954d091-7c85-457f-9ae2-1ac070e151a3')
 #################### index#######################################
 def index(request):
     response = cmc.cryptocurrency_listings_latest()
+    paginator = Paginator(response.data, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
 
-    return render(request, 'user/index.html', {'title':'index', 'response':response.data})
-
+    return render(request, 'user/index.html', {'title':'index', 'response':page_obj})
 
 ########### register here #####################################
 def register(request):
