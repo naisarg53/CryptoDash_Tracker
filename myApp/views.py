@@ -20,21 +20,22 @@ from django.utils.encoding import force_bytes
 from django.template import Context
 import requests
 from django.core.paginator import Paginator
+from pycoingecko import CoinGeckoAPI
 
 
-from coinmarketcapapi import CoinMarketCapAPI, CoinMarketCapAPIError
+#from coinmarketcapapi import CoinMarketCapAPI, CoinMarketCapAPIError
 
-cmc = CoinMarketCapAPI('e954d091-7c85-457f-9ae2-1ac070e151a3')
+#cmc = CoinMarketCapAPI('e954d091-7c85-457f-9ae2-1ac070e151a3')
+
 
 
 #################### index#######################################
 def index(request):
-    response = cmc.cryptocurrency_listings_latest()
-    paginator = Paginator(response.data, 10)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
+    #response = cmc.cryptocurrency_listings_latest()
 
-    return render(request, 'user/index.html', {'title':'index', 'response':page_obj})
+    response = CoinGeckoAPI()
+
+    return render(request, 'user/index.html', {'title':'index', 'response':response.get_coins})
 
 ########### register here #####################################
 def register(request):
