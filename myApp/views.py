@@ -17,25 +17,28 @@ from django.db.models.query_utils import Q
 from django.utils.http import urlsafe_base64_encode
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.encoding import force_bytes
-from django.template import Context
-import requests
-from django.core.paginator import Paginator
 from pycoingecko import CoinGeckoAPI
-
-
-#from coinmarketcapapi import CoinMarketCapAPI, CoinMarketCapAPIError
-
-#cmc = CoinMarketCapAPI('e954d091-7c85-457f-9ae2-1ac070e151a3')
-
+import requests
+import json
 
 
 #################### index#######################################
 def index(request):
-    #response = cmc.cryptocurrency_listings_latest()
 
     response = CoinGeckoAPI()
 
-    return render(request, 'user/index.html', {'title':'index', 'response':response.get_coins})
+    get_price_change = requests.get(f'https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=7').json()
+    get_trending_data = requests.get(f'https://api.coingecko.com/api/v3/search/trending').json()
+    get_global_trends = requests.get(f'https://api.coingecko.com/api/v3/global').json()
+    get_top_market_category = requests.get(f'https://api.coingecko.com/api/v3/coins/categories').json()
+
+    return render(request, 'user/index.html', {'title':'index', 'response': response.get_coins, 'trends': get_trending_data, 'get_price_change': get_price_change, 'get_global_data': get_global_trends, 'get_top_category': get_top_market_category})
+
+def detail(request, coin_name):
+
+    get_price_change = requests.get(f'https://api.coingecko.com/api/v3/coins/{coin_name}/market_chart?vs_currency=usd&days=7').json()
+
+    return render(request, 'user/detail.html', {'title': 'detail', 'get_line_chart': get_price_change, 'get_coin_name': coin_name})
 
 ########### register here #####################################
 def register(request):
