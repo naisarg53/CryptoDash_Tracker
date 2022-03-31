@@ -1,15 +1,17 @@
+import stripe
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
+from django.views.decorators.csrf import csrf_exempt
+
 from .forms import UserRegisterForm
 from django.core.mail import send_mail
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import get_template
 
 from django.core.mail import send_mail, BadHeaderError
-from django.http import HttpResponse
 from django.contrib.auth.forms import PasswordResetForm
 from django.contrib.auth.models import User
 from django.template.loader import render_to_string
@@ -20,6 +22,8 @@ from django.utils.encoding import force_bytes
 from pycoingecko import CoinGeckoAPI
 import requests
 import json
+from django.conf import settings
+from django.http.response import JsonResponse, HttpResponse
 
 
 #################### index#######################################
@@ -37,8 +41,65 @@ def index(request):
 def detail(request, coin_name):
 
     get_price_change = requests.get(f'https://api.coingecko.com/api/v3/coins/{coin_name}/market_chart?vs_currency=usd&days=7').json()
+    request.session['coin_name'] = coin_name
 
     return render(request, 'user/detail.html', {'title': 'detail', 'get_line_chart': get_price_change, 'get_coin_name': coin_name})
+
+
+@csrf_exempt
+def stripe_config(request):
+    if request.method == 'GET':
+        stripe_config = {'publicKey': settings.STRIPE_PUBLISHABLE_KEY}
+        return JsonResponse(stripe_config, safe=False)
+
+@csrf_exempt
+def create_checkout_session(request):
+
+    coin_name = request.session['coin_name']
+    get_coin_details = requests.get(f'https://api.coingecko.com/api/v3/coins/{coin_name}').json()
+
+    if request.method == 'GET':
+        domain_url = 'http://localhost:8000/'
+        stripe.api_key = settings.STRIPE_SECRET_KEY
+        try:
+            # Create new Checkout Session for the order
+            # Other optional params include:
+            # [billing_address_collection] - to display billing address details on the page
+            # [customer] - if you have an existing Stripe Customer ID
+            # [payment_intent_data] - capture the payment later
+            # [customer_email] - prefill the email input in the form
+            # For full details see https://stripe.com/docs/api/checkout/sessions/create
+
+            # ?session_id={CHECKOUT_SESSION_ID} means the redirect will have the session ID set as a query param
+            checkout_session = stripe.checkout.Session.create(
+                success_url=domain_url + 'success?session_id={CHECKOUT_SESSION_ID}',
+                cancel_url=domain_url + 'cancelled/',
+                payment_method_types=['card'],
+                mode='payment',
+                line_items=[
+                    {
+                        'images': [get_coin_details['image']['large']],
+                        'name': get_coin_details['name'],
+                        'quantity': 1,
+                        'currency': 'usd',
+                        'amount': int(get_coin_details['market_data']['current_price']['usd']),
+
+                    }
+                ]
+            )
+            return JsonResponse({'sessionId': checkout_session['id']})
+        except Exception as e:
+            return JsonResponse({'error': str(e)})
+
+
+def SuccessView(request):
+
+    return render(request, 'user/success.html')
+
+
+def CancelledView(request):
+    return render(request, 'user/cancelled.html')
+
 
 ########### register here #####################################
 def register(request):
@@ -63,6 +124,7 @@ def register(request):
         form = UserRegisterForm()
     return render(request, 'user/register.html', {'form': form, 'title':'reqister here'})
 
+
 ################ login forms###################################################
 def Login(request):
     if request.method == 'POST':
@@ -74,7 +136,7 @@ def Login(request):
         user = authenticate(request, username = username, password = password)
         if user is not None:
             form = login(request, user)
-            messages.success(request, f' wecome {username} !!')
+            messages.success(request, f' welcome {username} !!')
             return redirect('index')
         else:
             messages.info(request, f'account done not exit plz sign in')
