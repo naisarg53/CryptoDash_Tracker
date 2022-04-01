@@ -22,20 +22,24 @@ import requests
 from django.core.paginator import Paginator
 from pycoingecko import CoinGeckoAPI
 
+# from coinmarketcapapi import CoinMarketCapAPI, CoinMarketCapAPIError
 
-#from coinmarketcapapi import CoinMarketCapAPI, CoinMarketCapAPIError
+# cmc = CoinMarketCapAPI('e954d091-7c85-457f-9ae2-1ac070e151a3')
 
-#cmc = CoinMarketCapAPI('e954d091-7c85-457f-9ae2-1ac070e151a3')
-
+response = CoinGeckoAPI()
 
 
 #################### index#######################################
 def index(request):
-    #response = cmc.cryptocurrency_listings_latest()
-
     response = CoinGeckoAPI()
 
-    return render(request, 'user/index.html', {'title':'index', 'response':response.get_coins})
+    get_price_change = requests.get(f'https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=7').json()
+    get_trending_data = requests.get(f'https://api.coingecko.com/api/v3/search/trending').json()
+    get_global_trends = requests.get(f'https://api.coingecko.com/api/v3/global').json()
+    get_top_market_category = requests.get(f'https://api.coingecko.com/api/v3/coins/categories').json()
+
+    return render(request, 'user/index.html',{'title': 'index', 'response': response.get_coins, 'trends': get_trending_data,'get_price_change': get_price_change, 'get_global_data': get_global_trends,'get_top_category': get_top_market_category})
+
 
 ########### register here #####################################
 def register(request):
@@ -47,7 +51,7 @@ def register(request):
             email = form.cleaned_data.get('email')
             ######################### mail system ####################################
             htmly = get_template('user/Email.html')
-            d = { 'username': username }
+            d = {'username': username}
             subject, from_email, to = 'welcome', 'naisarg.pandya8853@gmail.com', email
             html_content = htmly.render(d)
             msg = EmailMultiAlternatives(subject, html_content, from_email, [to])
@@ -58,7 +62,8 @@ def register(request):
             return redirect('login')
     else:
         form = UserRegisterForm()
-    return render(request, 'user/register.html', {'form': form, 'title':'reqister here'})
+    return render(request, 'user/register.html', {'form': form, 'title': 'reqister here'})
+
 
 ################ login forms###################################################
 def Login(request):
@@ -68,15 +73,16 @@ def Login(request):
 
         username = request.POST['username']
         password = request.POST['password']
-        user = authenticate(request, username = username, password = password)
+        user = authenticate(request, username=username, password=password)
         if user is not None:
             form = login(request, user)
-            messages.success(request, f' wecome {username} !!')
+            messages.success(request, f' welcome {username} !!')
             return redirect('index')
         else:
             messages.info(request, f'account done not exit plz sign in')
     form = AuthenticationForm()
-    return render(request, 'user/login.html', {'form':form, 'title':'log in'})
+    return render(request, 'user/login.html', {'form': form, 'title': 'log in'})
+
 
 def password_reset_request(request):
     if request.method == "POST":
@@ -89,8 +95,8 @@ def password_reset_request(request):
                     subject = "Password Reset Requested"
                     email_template_name = "password/password_reset_email.txt"
                     c = {
-                        "email":user.email,
-                        'domain':'127.0.0.1:8000',
+                        "email": user.email,
+                        'domain': '127.0.0.1:8000',
                         'site_name': 'Website',
                         "uid": urlsafe_base64_encode(force_bytes(user.pk)),
                         "user": user,
@@ -104,4 +110,11 @@ def password_reset_request(request):
                         return HttpResponse('Invalid header found.')
                     return redirect("/password_reset/done/")
     password_reset_form = PasswordResetForm()
-    return render(request=request, template_name="password/password_reset.html", context={"password_reset_form":password_reset_form})
+    return render(request=request, template_name="password/password_reset.html",
+                  context={"password_reset_form": password_reset_form})
+
+
+def details(request, name):
+    response = CoinGeckoAPI()
+    get_price_change = requests.get(f'https://api.coingecko.com/api/v3/coins/{name}/market_chart?vs_currency=usd&days=7').json()
+    return render(request, 'user/details.html', {'response': response.get_coins, 'name': name, 'get_line_chart': get_price_change})

@@ -86,14 +86,64 @@
     {% block start %}
         {% if user.is_authenticated %}
                 <div style="margin: 40px; padding: 5px">
-                    <div class="card" style="width: 18rem;">
-                        <div class="card-body">
-                            <h5 class="card-title">Trending</h5>
+                    <div class="row">
+                    <div class="col-sm-4">
+                        <div class="card">
+                          <div class="card-header">
+                            <b style="font-size: 20px">Trending</b>
+                          </div>
+                          <ul class="list-group list-group-flush">
+                           {% for i in trends.coins|slice:":3" %}
+                                        <li class="list-group-item">
+                                            <img class="rounded float-left" style="width: 7%; height: 7%; font-size: 16px" src="{{ i.item.small }}">
+                                            <b>{{i.item.name}}</b>&nbsp;&nbsp;<span class="text-muted">{{i.item.symbol}}</span>
+                                            &nbsp;&nbsp;&nbsp;&nbsp;btc price: <b class="ml-3 text-primary">{{ i.item.price_btc | floatformat:7 | intcomma }}</b>
+                                        </li>
+                           {% endfor %}
+                          </ul>
                         </div>
                     </div>
-                    <table class="table table-hover" style="font-size: 20px; padding: 5px; background: white">
+                    <div class="col-sm-4">
+                        <div class="card">
+                          <div class="card-header">
+                            <b style="font-size: 20px">Global</b>
+                          </div>
+                          <ul class="list-group list-group-flush" style="font-size: 20px;">
+                                        <li class="list-group-item">
+                                            <b>Active Cryptocurrencies: </b>{{ get_global_data.data.active_cryptocurrencies }}
+                                        </li>
+                                        <li class="list-group-item">
+                                            <b>Total Market Cap: </b>{{ get_global_data.data.total_market_cap.usd | floatformat:2 | intcomma }}
+                                        </li>
+                                        <li class="list-group-item">
+                                            <b>Total Volume: </b>{{ get_global_data.data.total_volume.usd | floatformat:2 | intcomma }}
+                                        </li>
+                          </ul>
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="card">
+                          <div class="card-header">
+                            <b style="font-size: 20px">Top Category by Market Cap</b>
+                          </div>
+                          <ul class="list-group list-group-flush">
+                           {% for i in get_top_category|slice:":3" %}
+                                        <li class="list-group-item">
+                                            <b>{{i.name}}</b>&nbsp;&nbsp;<span>Volume 24h:</span><span class="text-muted">{{i.volume_24h | floatformat:2 | intcomma}}</span>
+                                            <div>
+                                            <b>Top Coins:</b> {% for j in i.top_3_coins %}
+                                                    <img class="rounded float-left" style="width: 7%; height: 7%; font-size: 12px" src="{{ j }}">
+                                                {% endfor %}
+                                            </div>
+                                        </li>
+                           {% endfor %}
+                          </ul>
+                        </div>
+                    </div>
+                </div>
+                    <table class="table table-hover" id ="tableId"style="font-size: 20px; padding: 5px; background: white">
                         <thead>
-                        <tr>
+                        <tr >
                             <th class="text-center">Name</th>
                             <th class="text-center">Price(USD)</th>
                             <th class="text-center">24h%</th>
@@ -105,10 +155,11 @@
                         </thead>
                         <tbody>
                         {% for i in response %}
-                            <tr>
-                                <td style="width:20%">
+                            <tr onclick="window.location='details/{{ i.id }}'">
+
+                                <td style="width:20%" >
                                     <img class="rounded float-left" style="width: 7%; height: 7%" src="{{ i.image.small }}">
-                                    <b>{{i.name}}</b>&nbsp{{i.symbol}}
+                                    <b>{{ i.name }} </b>&nbsp{{i.symbol}}
                                 </td>
                                 <td class="text-center"><b>{{i.market_data.current_price.usd | floatformat:2 | intcomma }}</b></td>
                                 <td class="text-center">
@@ -128,20 +179,6 @@
                                 <td class="text-center">{{ i.market_data.market_cap.usd | floatformat:2 | intcomma }}</td>
                                 <td class="text-center">{{ i.market_data.total_volume.usd | floatformat:2 | intcomma}}</td>
                                 <td class="text-center">{{ i.market_data.circulating_supply | floatformat:2| intcomma }}&nbsp <b class="text-muted">{{i.symbol}}</b></td>
-                                <td>
-
-                                    <canvas id="myChart" width="100" height="40"></canvas>
-
-                                    <script type="text/javascript" src="http://code.jquery.com/jquery-1.10.0.min.js"></script>
-                                    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
-                                    <script type="text/javascript">
-
-                                        var ctx = document.getElementById('myChart').getContext("2d");
-                                            new Chart(ctx, {
-                                                type: 'line', data: [{{i.market_data.price_change_percentage_7d_in_currency.usd }}]
-                                            });
-                                    </script>
-                                </td>
                             </tr>
                         {% endfor %}
                         </tbody>
