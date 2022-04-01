@@ -24,6 +24,7 @@ import requests
 import json
 from django.conf import settings
 from django.http.response import JsonResponse, HttpResponse
+#from models import PurchaseHistory
 
 
 #################### index#######################################
@@ -39,11 +40,12 @@ def index(request):
     return render(request, 'user/index.html', {'title':'index', 'response': response.get_coins, 'trends': get_trending_data, 'get_price_change': get_price_change, 'get_global_data': get_global_trends, 'get_top_category': get_top_market_category})
 
 def detail(request, coin_name):
+    response = CoinGeckoAPI()
 
     get_price_change = requests.get(f'https://api.coingecko.com/api/v3/coins/{coin_name}/market_chart?vs_currency=usd&days=7').json()
     request.session['coin_name'] = coin_name
 
-    return render(request, 'user/detail.html', {'title': 'detail', 'get_line_chart': get_price_change, 'get_coin_name': coin_name})
+    return render(request, 'user/detail.html', {'title': 'detail', 'response': response.get_coins, 'get_line_chart': get_price_change, 'get_coin_name': coin_name})
 
 
 @csrf_exempt
@@ -87,14 +89,21 @@ def create_checkout_session(request):
                     }
                 ]
             )
+            request.session['session_id'] = checkout_session.id
             return JsonResponse({'sessionId': checkout_session['id']})
         except Exception as e:
             return JsonResponse({'error': str(e)})
 
-
+#http://localhost:8000/success/?session_id=cs_test_a1avHehgAd95AELxtgEgXHQJSHqQ9WmMPP3qroozxta4spUIFEExmaHixn
 def SuccessView(request):
 
-    return render(request, 'user/success.html')
+    session = request.GET.get('session_id', '')
+    stripe.api_key = settings.STRIPE_SECRET_KEY
+    line_items = stripe.checkout.Session.list_line_items(session)
+    #get_data = PurchaseHistory(request.GET)
+
+
+    return render(request, 'user/success.html', {'get_payment_details': line_items, 'get_session': session})
 
 
 def CancelledView(request):
