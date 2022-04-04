@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Portfolio</title>
+    <!-- bootstrap file -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <!-- bootstrap file-->
+
+      <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4"></script>
+</head>
+
+{% extends 'user/navbar.html' %}
+{% block body_block %}
+<div class="container">
+    <h1><b>Portfolio</b></h1>
+    <div style="display: flex;justify-content: center;align-items: center;margin-bottom:50px;margin-top: 50px">
+        <div style="flex:1;width:40%">
+            <canvas id="dounut" ></canvas>
+        </div>
+        <script type="text/javascript">
+        let ctx = document.getElementById("dounut").getContext("2d");
+
+        let chart = new Chart(ctx, {
+          type: 'doughnut',
+          data: {
+             labels: [{% for key,value in data.items %} '{{ value.name }}', {% endfor %}],
+             datasets: [
+                {
+                  label: "Coin Holdings",
+                  backgroundColor: ["orange","green","teal"],
+                  borderColor: "#",
+                  data: [{% for key,value in data.items %} {{ value.netCost }}, {% endfor %}]
+                }
+             ]
+          },
+          options: {
+             title: {
+                text: 'Total Investment: $ {{ total_data.total_invest}}',
+                display: true
+             }
+          }
+        });
+        </script>
+
+        <div class="col">
+            <table class="table table-hover col-sm-4 col-lg-6 mt-5" style="font-size: 20px; background: white">
+                        <thead>
+                        <tr>
+                            <th class="text-center">Total Investment</th>
+                            <th class="text-center">Current Market Value</th>
+                            <th class="text-center">Total Profit/Loss</th>
+                            <th class="text-center">Change(%)</th>
+                            <th class="text-center">Total Coin Holdings</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="text-center" style="vertical-align: middle"><b>$ {{total_data.total_invest}}</b></td>
+                                <td class="text-center" style="vertical-align: middle"><b>${{total_data.c_market}}</b></td>
+                                <td class="text-center" style="vertical-align: middle">
+                                    {% if total_data.t_profit > 0 %}
+                                    <b class="text-success "> + $ {{ total_data.t_profit}}</b>
+                                    {% else %}
+                                    <b class="text-danger ">{{ total_data.t_profit}}</b>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center" style="vertical-align: middle">
+                                    {% if total_data.t_change > 0 %}
+                                        <b class="text-success ">+ {{total_data.t_change}}%</b>
+                                    {% else %}
+                                        <b class="text-danger">{{total_data.t_change}}%</b>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center" style="vertical-align: middle"><b>{{total_data.t_holdings}}</b></td>
+                            </tr>
+                        </tbody>
+           </table>
+        </div>
+
+
+        </div>
+    </div>
+    <div class="row">
+
+    <div class="container">
+       <table class="table table-hover col-sm-4 col-lg-6" style="font-size: 20px; background: white">
+                        <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th class="text-center">Market Value</th>
+                            <th class="text-center">Net Cost</th>
+                            <th class="text-center">Profit/Loss</th>
+                            <th class="text-center">Change</th>
+                            <th class="text-center">Total Holdings</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for key,value in data.items %}
+                            <tr>
+                                <td style="width:20%; vertical-align: middle">
+                                    <a href={% url 'detail' coin_name=key %}>
+                                        <img class="rounded float-left" style="width: 7%; height: 7%" src="{{ value.image }}">
+                                        <b>{{value.name}}</b>&nbsp{{value.symbol}}
+                                    </a>
+                                </td>
+                                <td class="text-center" style="vertical-align: middle"><b>$ {{value.marketValue}}</b></td>
+                                <td class="text-center" style="vertical-align: middle"><b>$     {{value.netCost}}</b></td>
+                                <td class="text-center" style="vertical-align: middle">
+                                    {% if value.change > 0 %}
+                                    <b class="text-success "> + ${{ value.change}}</b>
+                                    {% else %}
+                                    <b class="text-danger ">${{ value.change}}</b>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center" style="vertical-align: middle">
+                                    {% if value.percentage_change > 0 %}
+                                        <b class="text-success ">+ {{value.percentage_change}}%</b>
+                                    {% else %}
+                                        <b class="text-danger">{{value.percentage_change}}%</b>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center" style="vertical-align: middle"><b>{{value.coinHolding}}</b></td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+       </table>
+    </div>
+    </div>
+
+</div>
+{% endblock %}
+</html>

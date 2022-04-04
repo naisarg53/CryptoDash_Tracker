@@ -31,5 +31,8 @@ urlpatterns = [
     path('create-checkout-session/', views.create_checkout_session),
     path('success/', views.SuccessView),
     path('cancelled/', views.CancelledView),
+    path('orders/', views.orderHistory,name="orders"),
+    path('portfolio/', views.portfoilio, name="portfolio"),
+
 ]
 
