@@ -24,10 +24,11 @@ import requests
 import json
 from django.conf import settings
 from django.http.response import JsonResponse, HttpResponse
-#from models import PurchaseHistory
+from .models import PurchaseHistory,CoinsDetails
 
 
-#################### index#######################################
+
+#################### index #######################################
 def index(request):
 
     response = CoinGeckoAPI()
@@ -46,7 +47,6 @@ def detail(request, coin_name):
     request.session['coin_name'] = coin_name
 
     return render(request, 'user/detail.html', {'title': 'detail', 'response': response.get_coins, 'get_line_chart': get_price_change, 'get_coin_name': coin_name})
-
 
 @csrf_exempt
 def stripe_config(request):
@@ -84,10 +84,10 @@ def create_checkout_session(request):
                         'name': get_coin_details['name'],
                         'quantity': 1,
                         'currency': 'usd',
-                        'amount': int(get_coin_details['market_data']['current_price']['usd']),
-
+                        'amount': int(get_coin_details['market_data']['current_price']['usd'])*100,
                     }
-                ]
+                ],
+                metadata={'coin_id':get_coin_details['id']},
             )
             request.session['session_id'] = checkout_session.id
             return JsonResponse({'sessionId': checkout_session['id']})
@@ -96,19 +96,85 @@ def create_checkout_session(request):
 
 #http://localhost:8000/success/?session_id=cs_test_a1avHehgAd95AELxtgEgXHQJSHqQ9WmMPP3qroozxta4spUIFEExmaHixn
 def SuccessView(request):
-
     session = request.GET.get('session_id', '')
     stripe.api_key = settings.STRIPE_SECRET_KEY
     line_items = stripe.checkout.Session.list_line_items(session)
+    subTotal = line_items.data[0]['amount_subtotal']
+    coinType =line_items.data[0]["description"]
+    qty=line_items.data[0]["quantity"]
+    coin_id=stripe.checkout.Session.retrieve(session)['metadata']['coin_id']
+    userName=request.user.username
+    # data = {subTotal, qty, coinType, userName}
+    b = PurchaseHistory(username=userName, coin_name=coinType, sub_Total=subTotal,quantity=qty,coin_id=coin_id)
+    b.save()
     #get_data = PurchaseHistory(request.GET)
-
-
-    return render(request, 'user/success.html', {'get_payment_details': line_items, 'get_session': session})
-
+    return render(request, 'user/success.html', {'get_payment_details':b, 'get_session': session})
 
 def CancelledView(request):
     return render(request, 'user/cancelled.html')
 
+def orderHistory(request):
+    userName = request.user.username
+    orderData=PurchaseHistory.objects.filter(username=userName)
+
+    return render(request, 'user/orders.html', {'orderData': orderData})
+
+"""def fetchList():
+    getCoinDetails= requests.get(f'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&per_page=250&page=1').json()
+    for item in getCoinDetails:
+        if not CoinsDetails.objects.contains(item["id"]):
+            details=CoinsDetails.objects.create(id=item["id"],symbol=item["symbol"],name=item["name"],image=item["image"])
+            details.save()"""
+
+""" Portfolio view """
+def portfoilio(request):
+    userName = request.user.username
+    userOrders = PurchaseHistory.objects.filter(username=userName)
+    coins=[]
+    data={}
+
+    for i in userOrders:  #get all coins type from user order
+        if i.coin_id not in coins:
+            coins.append(i.coin_id)
+            data[i.coin_id]={}
+
+    for coinType in coins:
+        getCurrentPrice=requests.get(f'https://api.coingecko.com/api/v3/simple/price?ids={coinType}&vs_currencies=usd').json()
+        currentPrice=getCurrentPrice[coinType]['usd']   #get current price of the coin in coins array
+
+        all_coin_order=userOrders.filter(coin_id=coinType) #get all user orders for the coinType
+        coinHolding=0
+        netCost=0.0
+        for coinOrder in all_coin_order:
+            coinHolding+=coinOrder.quantity
+            netCost+=float(coinOrder.sub_Total)
+
+        data[coinType]['image'] = CoinsDetails.objects.get(id=coinType).image
+        data[coinType]['name'] = CoinsDetails.objects.get(id=coinType).name
+        data[coinType]['symbol'] = CoinsDetails.objects.get(id=coinType).symbol
+        data[coinType]['coinHolding']=coinHolding
+        data[coinType]['netCost'] = netCost
+
+        currentMarketValue=float(coinHolding * currentPrice)
+        data[coinType]['marketValue'] = round(currentMarketValue,2)
+
+        netProfitOrLoss=float(currentMarketValue-netCost)
+        data[coinType]['change'] = round(netProfitOrLoss,2)
+
+        percenChange = netProfitOrLoss * 100 / netCost
+        data[coinType]['percentage_change'] = round(percenChange, 2)
+
+    #Total investment data
+    totalData={'total_invest':0,'c_market':0,'t_profit':0,'t_change':0,'t_holdings':0}
+    for ct in coins:
+        totalData['total_invest']+=data[ct]['netCost']
+        totalData['c_market'] += data[ct]['marketValue']
+        totalData['t_holdings'] += data[ct]['coinHolding']
+
+    totalData['t_profit']=round(totalData['c_market']-totalData['total_invest'],2)
+    totalData['t_change'] = round(totalData['t_profit'] * 100/ totalData['total_invest'],2)
+    totalData['c_market']=round(totalData['c_market'],2)
+    return render(request, 'user/portfolio.html',{'data':data,'total_data':totalData})
 
 ########### register here #####################################
 def register(request):
@@ -143,6 +209,7 @@ def Login(request):
         username = request.POST['username']
         password = request.POST['password']
         user = authenticate(request, username = username, password = password)
+        request.session['user_name'] = username
         if user is not None:
             form = login(request, user)
             messages.success(request, f' welcome {username} !!')
@@ -179,3 +246,4 @@ def password_reset_request(request):
                     return redirect("/password_reset/done/")
     password_reset_form = PasswordResetForm()
     return render(request=request, template_name="password/password_reset.html", context={"password_reset_form":password_reset_form})
+

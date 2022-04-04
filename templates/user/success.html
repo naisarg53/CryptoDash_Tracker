@@ -1,3 +1,4 @@
+{% load humanize %}
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
@@ -34,7 +35,18 @@
 
 </head>
 
-<body class="container">
-    <h1>Payment Successful</h1>
+<body class="container" style="display: flex;align-items: center;justify-content:center;text-align: center ">
+    <div></div>
+        <h1>Payment Successful</h1>
+        <div>
+            <h2> Order Details:</h2>
+            <h5> Coin Name: <b>{{ get_payment_details.coin_name }}</b></h5>
+            <h5> Sub Total: <b>{{ get_payment_details.sub_Total | floatformat:2 | intcomma }}</b></h5>
+            <h5> Quantity: <b>{{ get_payment_details.quantity }}</b></h5>
+        </div>
+        <a href="{% url "index" %}"> <button class="btn btn-primary">Home</button></a>
+
+{#<p>{{ get_payment_details }}</p>#}
+</div>
 </body>
 </html>
