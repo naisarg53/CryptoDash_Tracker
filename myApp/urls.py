@@ -33,6 +33,5 @@ urlpatterns = [
     path('cancelled/', views.CancelledView),
     path('orders/', views.orderHistory,name="orders"),
     path('portfolio/', views.portfoilio, name="portfolio"),
-
 ]
 

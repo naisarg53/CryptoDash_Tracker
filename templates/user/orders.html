@@ -17,17 +17,13 @@
     <!-- bootstrap file -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-{#    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>#}
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <!-- bootstrap file-->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-    <!-- Stripe JS -->
-    <script src="{% static 'main.js' %}"></script>
-    <script defer src="https://use.fontawesome.com/releases/v5.15.4/js/all.js"></script>
-    <script src="https://js.stripe.com/v3/"></script>
 
 
     <!-- main css -->
@@ -35,12 +31,42 @@
 
 </head>
 
-<body class="container">
+<body style="background-image: url('https://previews.123rf.com/images/techdesign07/techdesign072003/techdesign07200300025/143779684-stock-market-background-or-forex-trading-business-graph-chart-for-financial-investment-concept-busin.jpg'); background-repeat: no-repeat; background-size: 100% 400% ">
+
+    <nav class="navbar navbar-inverse navbar-top">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <button class="navbar-toggle" data-toggle="collapse" data-target="#mainNavBar">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" class="styleheader" href="{% url "index" %}">CryptoDashboard</a>
+            </div>
+            <div class="collapse navbar-collapse" id="mainNavBar">
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="{% url "index" %}">Home</a></li>
+
+                    {% if user.is_authenticated %}
+                         <li><a href="{% url 'orders' %}"><span class="glyphicon"></span>Orders</a></li>
+                        <li><a href="{% url 'portfolio' %}"><span class="glyphicon"></span>Portfolio</a></li>
+                        <li><a href=""><span class="glyphicon glyphicon-user"></span> &nbsp; {{user.username}}</a></li>
+                        <li><a href="{% url "logout" %}"><span class="glyphicon glyphicon-log-out"></span> &nbsp; Logout</a></li>
+                    {% else %}
+                        <li><a href="{% url "register" %}"><span class="glyphicon glyphicon-user"></span> &nbsp; Sign up</a></li>
+                        <li><a href="{% url "login" %}"><span class="glyphicon glyphicon-log-in"></span> &nbsp; Log in</a></li>
+                    {% endif %}
+
+                </ul>
+            </div>
+        </div>
+    </nav>
 
     <div class="container" >
          <h1 class="d-flex justify-content-center m-5">Order History</h1>
          <div class="d-flex justify-content-center">
-                    <table class="table table-hover col-sm-4 col-lg-6" style="font-size: 20px; background: white">
+                    <table class="table table-hover col-sm-4 col-lg-12" style="font-size: 20px; background: whitesmoke">
                         <thead>
                         <tr>
                             <th>Coin Name</th>

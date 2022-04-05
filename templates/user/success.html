@@ -24,10 +24,6 @@
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-    <!-- Stripe JS -->
-    <script src="{% static 'main.js' %}"></script>
-    <script defer src="https://use.fontawesome.com/releases/v5.15.4/js/all.js"></script>
-    <script src="https://js.stripe.com/v3/"></script>
 
 
     <!-- main css -->
@@ -35,8 +31,41 @@
 
 </head>
 
-<body class="container" style="display: flex;align-items: center;justify-content:center;text-align: center ">
-    <div></div>
+
+<body style="background-image: url('https://img.freepik.com/free-vector/white-background-with-blue-confetti-celebration-carnival-ribbons_29865-936.jpg?w=2000'); background-repeat: no-repeat; background-size: 100% 200% ">
+
+    <nav class="navbar navbar-inverse navbar-top">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <button class="navbar-toggle" data-toggle="collapse" data-target="#mainNavBar">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" class="styleheader" href="{% url "index" %}">CryptoDashboard</a>
+            </div>
+            <div class="collapse navbar-collapse" id="mainNavBar">
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="{% url "index" %}">Home</a></li>
+
+                    {% if user.is_authenticated %}
+                         <li><a href="{% url 'orders' %}"><span class="glyphicon"></span>Orders</a></li>
+                        <li><a href="{% url 'portfolio' %}"><span class="glyphicon"></span>Portfolio</a></li>
+                        <li><a href=""><span class="glyphicon glyphicon-user"></span> &nbsp; {{user.username}}</a></li>
+                        <li><a href="{% url "logout" %}"><span class="glyphicon glyphicon-log-out"></span> &nbsp; Logout</a></li>
+                    {% else %}
+                        <li><a href="{% url "register" %}"><span class="glyphicon glyphicon-user"></span> &nbsp; Sign up</a></li>
+                        <li><a href="{% url "login" %}"><span class="glyphicon glyphicon-log-in"></span> &nbsp; Log in</a></li>
+                    {% endif %}
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="row">
+        <div class="container" style="margin-top: 200px; margin-left: 600px">
         <h1>Payment Successful</h1>
         <div>
             <h2> Order Details:</h2>
@@ -44,8 +73,9 @@
             <h5> Sub Total: <b>{{ get_payment_details.sub_Total | floatformat:2 | intcomma }}</b></h5>
             <h5> Quantity: <b>{{ get_payment_details.quantity }}</b></h5>
         </div>
-        <a href="{% url "index" %}"> <button class="btn btn-primary">Home</button></a>
+        <a href="{% url "orders" %}"> <button class="btn btn-primary">View Order History</button></a>
 
+        </div>
 {#<p>{{ get_payment_details }}</p>#}
 </div>
 </body>

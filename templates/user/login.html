@@ -1,7 +1,69 @@
-{% extends "user/index.html" %}
 {% load crispy_forms_filters %}
 {% load crispy_forms_tags %}
-{% block start %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="title" content="project">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="language" content="English">
+    <meta name="author" content="Team 5">
+
+    <title>{{title}}</title>
+
+
+    <!-- bootstrap file -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <!-- bootstrap file-->
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+
+    <!-- main css -->
+    <link rel="stylesheet" type="text/css" href="{% static "index.css" %}" />
+
+</head>
+
+<body style="background-image: url('https://www.ih5g.com/wp-content/uploads/2017/10/login-background.jpg'); background-repeat: no-repeat; background-size: 100% 200% ">
+
+    <nav class="navbar navbar-inverse navbar-top">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <button class="navbar-toggle" data-toggle="collapse" data-target="#mainNavBar">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" class="styleheader" href="{% url "index" %}">CryptoDashboard</a>
+            </div>
+            <div class="collapse navbar-collapse" id="mainNavBar">
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="{% url "index" %}">Home</a></li>
+
+                    {% if user.is_authenticated %}
+                         <li><a href="{% url 'orders' %}"><span class="glyphicon"></span>Orders</a></li>
+                        <li><a href="{% url 'portfolio' %}"><span class="glyphicon"></span>Portfolio</a></li>
+                        <li><a href=""><span class="glyphicon glyphicon-user"></span> &nbsp; {{user.username}}</a></li>
+                        <li><a href="{% url "logout" %}"><span class="glyphicon glyphicon-log-out"></span> &nbsp; Logout</a></li>
+                    {% else %}
+                        <li><a href="{% url "register" %}"><span class="glyphicon glyphicon-user"></span> &nbsp; Sign up</a></li>
+                        <li><a href="{% url "login" %}"><span class="glyphicon glyphicon-log-in"></span> &nbsp; Log in</a></li>
+                    {% endif %}
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
 
     <div class="content-section col-md-8 col-md-offset-2">
         <center>
@@ -11,12 +73,12 @@
                     {{ form|crispy}}
                 </fieldset>
                 <center>
-                    <button style="background: blue; font-size: 2rem; padding:1%;" class="btn btn-primary" type="submit"><span class="glyphicon glyphicon-log-in"></span> &nbsp; login</button>
+                    <button style="background: green; font-size: 2rem; padding:1%;" class="btn btn-primary" type="submit"><span class="glyphicon glyphicon-log-in"></span> &nbsp; login</button>
                 </center>
                 <br/>
-                <sub style="text-align: left;"><a href="{% url 'register' %}" style="text-decoration: none; color: blue; padding:2%; cursor:pointer; margin-right:2%;">don't have account,sign up</a></sub>
-                <sub style="text-align: left;"><a href="{% url 'password_reset' %}" style="text-decoration: none; color: blue; padding:2%; cursor:pointer; margin-right:2%;">Forgotten your password?</a></sub>
+                <sub style="text-align: left;"><a href="{% url 'register' %}" style="text-decoration: none; color: blue; padding:2%; cursor:pointer; margin-right:2%; font-size: 16px">don't have account,sign up</a></sub>
+                <sub style="text-align: left;"><a href="{% url 'password_reset' %}" style="text-decoration: none; color: blue; padding:2%; cursor:pointer; margin-right:2%; font-size: 16px">Forgotten your password?</a></sub>
             </form>
         </center>
     </div>
-{% endblock start %}
+</body>

@@ -95,11 +95,12 @@ def create_checkout_session(request):
             return JsonResponse({'error': str(e)})
 
 #http://localhost:8000/success/?session_id=cs_test_a1avHehgAd95AELxtgEgXHQJSHqQ9WmMPP3qroozxta4spUIFEExmaHixn
+# http://localhost:8000/success/?session_id=cs_test_a1NqAmW024NmJ44GFu5tB5tzaHJxcWA08Y2GiXPUhx11aDS3M7WC3sFl5o
 def SuccessView(request):
     session = request.GET.get('session_id', '')
     stripe.api_key = settings.STRIPE_SECRET_KEY
     line_items = stripe.checkout.Session.list_line_items(session)
-    subTotal = line_items.data[0]['amount_subtotal']
+    subTotal = line_items.data[0]['amount_subtotal']/100
     coinType =line_items.data[0]["description"]
     qty=line_items.data[0]["quantity"]
     coin_id=stripe.checkout.Session.retrieve(session)['metadata']['coin_id']
@@ -119,15 +120,15 @@ def orderHistory(request):
 
     return render(request, 'user/orders.html', {'orderData': orderData})
 
-"""def fetchList():
-    getCoinDetails= requests.get(f'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&per_page=250&page=1').json()
-    for item in getCoinDetails:
-        if not CoinsDetails.objects.contains(item["id"]):
-            details=CoinsDetails.objects.create(id=item["id"],symbol=item["symbol"],name=item["name"],image=item["image"])
-            details.save()"""
+# def fetchList():
+#     getCoinDetails= requests.get(f'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&per_page=250&page=1').json()
+#     for item in getCoinDetails:
+#             details=CoinsDetails.objects.create(id=item["id"],symbol=item["symbol"],name=item["name"],image=item["image"])
+#             details.save()
 
 """ Portfolio view """
 def portfoilio(request):
+    #fetchList()
     userName = request.user.username
     userOrders = PurchaseHistory.objects.filter(username=userName)
     coins=[]
