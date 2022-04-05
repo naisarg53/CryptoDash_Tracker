@@ -84,7 +84,7 @@ def create_checkout_session(request):
                         'name': get_coin_details['name'],
                         'quantity': 1,
                         'currency': 'usd',
-                        'amount': int(get_coin_details['market_data']['current_price']['usd'])*100,
+                        'amount': int(round(float(get_coin_details['market_data']['current_price']['usd']),2)*100),
                     }
                 ],
                 metadata={'coin_id':get_coin_details['id']},
@@ -117,18 +117,18 @@ def CancelledView(request):
 def orderHistory(request):
     userName = request.user.username
     orderData=PurchaseHistory.objects.filter(username=userName)
-
+    
     return render(request, 'user/orders.html', {'orderData': orderData})
 
-# def fetchList():
-#     getCoinDetails= requests.get(f'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&per_page=250&page=1').json()
-#     for item in getCoinDetails:
-#             details=CoinsDetails.objects.create(id=item["id"],symbol=item["symbol"],name=item["name"],image=item["image"])
-#             details.save()
+def fetchList():
+    getCoinDetails= requests.get(f'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&per_page=250&page=1').json()
+    for item in getCoinDetails:
+            details=CoinsDetails.objects.create(id=item["id"],symbol=item["symbol"],name=item["name"],image=item["image"])
+            details.save()
 
 """ Portfolio view """
 def portfoilio(request):
-    #fetchList()
+    # fetchList()
     userName = request.user.username
     userOrders = PurchaseHistory.objects.filter(username=userName)
     coins=[]
@@ -161,8 +161,10 @@ def portfoilio(request):
 
         netProfitOrLoss=float(currentMarketValue-netCost)
         data[coinType]['change'] = round(netProfitOrLoss,2)
-
-        percenChange = netProfitOrLoss * 100 / netCost
+        if netCost != 0:
+            percenChange = netProfitOrLoss * 100 / netCost
+        else:
+            percenChange=0
         data[coinType]['percentage_change'] = round(percenChange, 2)
 
     #Total investment data
@@ -173,7 +175,10 @@ def portfoilio(request):
         totalData['t_holdings'] += data[ct]['coinHolding']
 
     totalData['t_profit']=round(totalData['c_market']-totalData['total_invest'],2)
-    totalData['t_change'] = round(totalData['t_profit'] * 100/ totalData['total_invest'],2)
+    if totalData['total_invest'] != 0:
+        totalData['t_change'] = round(totalData['t_profit'] * 100/ totalData['total_invest'],2)
+    else:
+        totalData['t_change']=0
     totalData['c_market']=round(totalData['c_market'],2)
     return render(request, 'user/portfolio.html',{'data':data,'total_data':totalData})
 
